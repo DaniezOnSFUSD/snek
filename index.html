@@ -1,78 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Burple Plains Snek by DaniezOnSFUSD</title>
+    <title>Burple Plains: GitHub Edition</title>
     <style>
-        :root {
-            --blurple: #5865F2;
-            --grass: #7CFC00; /* Playful Lawn Green */
-            --dark-grass: #4AB40D;
-            --black: #23272a; /* Softer Discord Black */
-        }
+        :root { --blurple: #5865F2; --dark-bg: #0d1117; }
         body {
-            background-color: #f0f4f8;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Rounded, sans-serif;
+            background-color: var(--dark-bg); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; height: 100vh; margin: 0; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; color: #c9d1d9;
         }
         #game-container {
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-radius: 15px;
-            overflow: hidden;
+            position: relative; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 4px solid #30363d;
+            transition: all 0.4s ease;
         }
-        canvas {
-            background-color: var(--grass);
-            display: block;
-        }
-        /* UI Screens */
+        canvas { display: block; }
         .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            text-align: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 17, 23, 0.94); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 10; text-align: center;
         }
-        h1 { color: var(--blurple); margin: 0; font-size: 42px; text-shadow: 2px 2px 0px #fff; }
-        .credit { color: var(--dark-grass); font-weight: bold; margin-bottom: 30px; }
+        h1 { color: var(--blurple); font-size: 32px; margin: 0; }
         
-        button {
-            background: var(--blurple);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            margin: 10px;
-            transition: transform 0.2s, background 0.2s;
-            font-weight: bold;
+        /* Season Tracker Styling */
+        .tracker-box {
+            background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+            padding: 15px; margin: 15px 0; width: 85%;
         }
-        button:hover { transform: scale(1.1); background: #4752c4; }
-        button.secondary { background: #b9bbbe; }
+        .tracker-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.6; }
+        .holiday-pill {
+            display: inline-block; padding: 6px 12px; margin: 4px; border-radius: 20px;
+            font-size: 12px; background: #21262d; cursor: pointer; transition: 0.2s;
+            border: 1px solid transparent; color: #8b949e;
+        }
+        .holiday-pill:hover { border-color: var(--blurple); background: #30363d; color: white; transform: scale(1.05); }
+        .is-active { background: var(--blurple) !important; color: white !important; font-weight: bold; border-color: white; }
 
+        button {
+            background: #238636; color: white; border: none; padding: 14px 45px;
+            font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        button:hover { background: #2ea043; transform: translateY(-2px); }
         .hidden { display: none !important; }
-        
         #hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px black;
-            pointer-events: none;
+            position: absolute; top: 15px; width: 100%; display: flex; justify-content: space-around;
+            color: #f0f6fc; font-weight: bold; z-index: 5; pointer-events: none;
         }
     </style>
 </head>
@@ -81,132 +53,144 @@
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="600"></canvas>
         
-        <!-- HUD -->
-        <div id="hud" class="hidden">Score: <span id="score">0</span></div>
-
-        <!-- Start Screen -->
-        <div id="start-screen" class="overlay">
-            <h1>Burple Plains Snek</h1>
-            <div class="credit">by DaniezOnSFUSD</div>
-            <button onclick="startGame()">PLAY</button>
-            <button class="secondary" onclick="toggleSettings()">SETTINGS</button>
+        <div id="hud" class="hidden">
+            <div>🍎 SCORE: <span id="score">0</span></div>
+            <div>🏆 BEST: <span id="highScore">0</span></div>
         </div>
 
-        <!-- Settings Screen -->
-        <div id="settings-screen" class="overlay hidden">
-            <h1>Settings</h1>
-            <p style="color: #4f545c">Game Speed: <input type="range" id="speedRange" min="50" max="200" value="100"></p>
-            <button onclick="toggleSettings()">BACK</button>
+        <div id="start-screen" class="overlay">
+            <h1>Burple Plains Snek</h1>
+            <div style="font-size: 13px; opacity: 0.6; margin-top: 5px;">by DaniezOnSFUSD</div>
+
+            <div class="tracker-box">
+                <div class="tracker-title">Season & Holiday Tracker</div>
+                <div id="tracker-list">
+                    <!-- Holidays injected by JS -->
+                </div>
+            </div>
+
+            <button onclick="startGame()">PLAY ADVENTURE</button>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const scoreElement = document.getElementById("score");
-        
-        let score = 0;
-        let dx = 0, dy = 0;
-        let snake = [{x: 10, y: 10}];
-        let food = {x: 15, y: 15, type: 'apple'};
-        let gameActive = false;
-        let gameLoop;
+        const now = new Date();
+        const curM = now.getMonth();
+        const curD = now.getDate();
 
-        function clearCanvas() {
-            // Draw playful checkerboard grass
-            for(let i=0; i<30; i++) {
-                for(let j=0; j<30; j++) {
-                    ctx.fillStyle = (i+j) % 2 === 0 ? '#7CFC00' : '#73eb00';
-                    ctx.fillRect(i*20, j*20, 20, 20);
-                }
+        let score = 0, highScore = localStorage.getItem('snekHighScore') || 0;
+        let dx = 0, dy = 0, nextDx = 0, nextDy = 0;
+        let snake = [{x: 15, y: 15}, {x: 15, y: 16}];
+        let food = {x: 10, y: 10};
+
+        const seasons = {
+            winter: { bg: "#E0F7FA", accent: "#00BCD4", name: "Winter" },
+            spring: { bg: "#FFD1DC", accent: "#FF91A4", name: "Spring" },
+            summer: { bg: "#A2E4B8", accent: "#4AB40D", name: "Summer" },
+            autumn: { bg: "#FFB347", accent: "#E67E22", name: "Autumn" }
+        };
+
+        const holidays = [
+            { name: "New Year 🎆", m: 0, d: 1, s: 'winter' },
+            { name: "DaniezOnSFUSD's Birthday! 🎂", m: 1, d: 22, s: 'winter' },
+            { name: "St. Patricks 🍀", m: 2, d: 17, s: 'spring' },
+            { name: "Easter 🐰", m: 3, d: 15, s: 'spring' },
+            { name: "Halloween 🎃", m: 9, d: 31, s: 'autumn' },
+            { name: "Christmas 🎄", m: 11, d: 25, s: 'winter' }
+        ];
+
+        let activeTheme = seasons.summer;
+
+        function initTracker() {
+            const list = document.getElementById('tracker-list');
+            holidays.forEach(h => {
+                const pill = document.createElement('div');
+                pill.className = 'holiday-pill';
+                if(h.m === curM && h.d === curD) pill.classList.add('is-active');
+                pill.innerText = h.name;
+                
+                pill.onmouseover = () => { activeTheme = seasons[h.s]; drawWorld(); };
+                pill.onmouseout = () => { setSystemSeason(); drawWorld(); };
+                
+                list.appendChild(pill);
+            });
+            setSystemSeason();
+            drawWorld();
+        }
+
+        function setSystemSeason() {
+            if (curM >= 2 && curM <= 4) activeTheme = seasons.spring;
+            else if (curM >= 5 && curM <= 7) activeTheme = seasons.summer;
+            else if (curM >= 8 && curM <= 10) activeTheme = seasons.autumn;
+            else activeTheme = seasons.winter;
+        }
+
+        function drawWorld() {
+            ctx.fillStyle = activeTheme.bg;
+            ctx.fillRect(0,0,600,600);
+            // Grid lines
+            ctx.strokeStyle = activeTheme.accent;
+            ctx.globalAlpha = 0.15;
+            for(let i=0; i<600; i+=20) {
+                ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,600); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(600,i); ctx.stroke();
             }
+            ctx.globalAlpha = 1.0;
         }
 
         function drawSnake() {
-            snake.forEach((part, index) => {
-                ctx.fillStyle = index === 0 ? '#5865F2' : '#7289da'; // Blurple head
-                ctx.beginPath();
-                ctx.roundRect(part.x * 20, part.y * 20, 18, 18, 5);
-                ctx.fill();
-                if(index === 0) { // Eyes
+            snake.forEach((p, i) => {
+                ctx.fillStyle = i === 0 ? "#5865F2" : "#7289da";
+                ctx.beginPath(); ctx.roundRect(p.x*20, p.y*20, 19, 19, 6); ctx.fill();
+                if(i === 0) {
                     ctx.fillStyle = "white";
-                    ctx.fillRect(part.x * 20 + 4, part.y * 20 + 4, 3, 3);
-                    ctx.fillRect(part.x * 20 + 11, part.y * 20 + 4, 3, 3);
+                    ctx.beginPath(); ctx.arc(p.x*20+6, p.y*20+7, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x*20+13, p.y*20+7, 2, 0, Math.PI*2); ctx.fill();
                 }
             });
         }
 
-        function advanceSnake() {
-            if (dx === 0 && dy === 0) return;
+        function update() {
+            dx = nextDx; dy = nextDy;
+            if(dx === 0 && dy === 0) return;
             const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            if(head.x<0 || head.x>=30 || head.y<0 || head.y>=30 || snake.some(s=>s.x===head.x && s.y===head.y)) {
+                location.reload(); return;
+            }
             snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) {
-                score++;
-                scoreElement.innerText = score;
-                createFood();
-            } else {
-                snake.pop();
-            }
+            if(head.x === food.x && head.y === food.y) {
+                score++; document.getElementById('score').innerText = score;
+                food = {x: Math.floor(Math.random()*30), y: Math.floor(Math.random()*30)};
+            } else { snake.pop(); }
         }
 
-        function createFood() {
-            food = {
-                x: Math.floor(Math.random() * 30),
-                y: Math.floor(Math.random() * 30),
-                type: ['apple', 'grape', 'mango'][Math.floor(Math.random()*3) ]
-            };
-        }
-
-        function drawFood() {
-            const colors = { apple: '#ff4d4d', grape: '#9b59b6', mango: '#ffb900' };
-            ctx.fillStyle = colors[food.type];
-            ctx.beginPath();
-            ctx.arc(food.x * 20 + 10, food.y * 20 + 10, 8, 0, Math.PI*2);
-            ctx.fill();
-        }
-
-        function checkGameOver() {
-            const head = snake[0];
-            if (head.x < 0 || head.x >= 30 || head.y < 0 || head.y >= 30) return true;
-            for (let i = 1; i < snake.length; i++) {
-                if (snake[i].x === head.x && snake[i].y === head.y) return true;
-            }
-            return false;
-        }
-
-        function gameStep() {
-            if (checkGameOver()) {
-                alert("Game Over! Score: " + score);
-                location.reload();
-                return;
-            }
-            clearCanvas();
-            drawFood();
-            advanceSnake();
+        function gameLoop() {
+            drawWorld();
+            ctx.font = "20px Arial"; ctx.fillText("🍎", food.x*20+2, food.y*20+18);
             drawSnake();
-            setTimeout(gameStep, 1000 / (document.getElementById('speedRange').value / 10));
+            update();
+            setTimeout(gameLoop, 100);
         }
 
         function startGame() {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('hud').classList.remove('hidden');
-            gameActive = true;
-            gameStep();
-        }
-
-        function toggleSettings() {
-            document.getElementById('settings-screen').classList.toggle('hidden');
-            document.getElementById('start-screen').classList.toggle('hidden');
+            document.getElementById('highScore').innerText = highScore;
+            nextDx = 0; nextDy = -1;
+            gameLoop();
         }
 
         window.addEventListener("keydown", e => {
-            if (e.key === "ArrowUp" || e.key === "w") { if(dy !== 1) {dx = 0; dy = -1;} }
-            if (e.key === "ArrowDown" || e.key === "s") { if(dy !== -1) {dx = 0; dy = 1;} }
-            if (e.key === "ArrowLeft" || e.key === "a") { if(dx !== 1) {dx = -1; dy = 0;} }
-            if (e.key === "ArrowRight" || e.key === "d") { if(dx !== -1) {dx = 1; dy = 0;} }
+            const k = e.key.toLowerCase();
+            if((k==="w"||k==="arrowup") && dy!==1) {nextDx=0; nextDy=-1;}
+            if((k==="s"||k==="arrowdown") && dy!==-1) {nextDx=0; nextDy=1;}
+            if((k==="a"||k==="arrowleft") && dx!==1) {nextDx=-1; nextDy=0;}
+            if((k==="d"||k==="arrowright") && dx!==-1) {nextDx=1; nextDy=0;}
         });
 
-        clearCanvas(); // Initial draw
+        initTracker();
     </script>
 </body>
 </html>
