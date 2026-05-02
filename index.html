@@ -5,39 +5,28 @@
     <title>Snek CORE: GOD MODE | DaniezOnSFUSD</title>
     <style>
         :root {
-            /* God Mode Colors Restored */
             --blurple: #5865F2; --dark: #020408; --gold: #FFD700; 
             --neon-pink: #ff00ff; --neon-cyan: #00f2ff; --danger: #ff4747;
-            --primary: #7289da; /* Homepage Sync */
         }
         body { background: var(--dark); margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; }
         
         #stage-container { position: relative; border: 4px solid #161b22; border-radius: 30px; box-shadow: 0 0 100px rgba(88, 101, 242, 0.3); background: #000; overflow: hidden; width: 95vw; height: 90vh; }
         canvas { display: block; width: 100%; height: 100%; }
 
-        /* HUD - God Mode Style */
         .hud { position: absolute; inset: 0; pointer-events: none; padding: 30px; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
         .hud-top { display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; text-shadow: 0 0 15px var(--blurple); }
         
         .xp-rail { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
         #xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--blurple), var(--neon-pink)); transition: width 0.3s; box-shadow: 0 0 20px var(--neon-cyan); }
 
-        /* Notifications */
         #alert-box { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, var(--blurple), #9199ff); padding: 12px 35px; border-radius: 50px; font-weight: bold; border: 2px solid white; box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: 0.5s; z-index: 1000; font-size: 0.9em; }
 
-        /* UI Screens */
         .screen { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; text-align: center; }
         .hidden { display: none !important; }
 
         .btn { background: var(--blurple); color: white; border: none; padding: 18px 50px; font-size: 22px; border-radius: 15px; cursor: pointer; font-weight: 900; transition: 0.3s; box-shadow: 0 8px 0 #2d3691; text-transform: uppercase; }
         .btn:hover { transform: translateY(-4px); box-shadow: 0 12px 0 #2d3691; filter: brightness(1.2); }
 
-        /* Shop Grid - God Mode Items */
-        .shop { display: grid; grid-template-columns: repeat(2, 200px); gap: 15px; margin: 25px 0; }
-        .item { background: #0d1117; padding: 15px; border-radius: 15px; border: 2px solid #30363d; cursor: pointer; transition: 0.2s; font-size: 0.85em; }
-        .item:hover { border-color: var(--neon-cyan); transform: scale(1.05); }
-
-        /* Scanline VFX */
         #vfx { position: absolute; inset: 0; pointer-events: none; z-index: 100; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%); background-size: 100% 4px; opacity: 0.4; }
     </style>
 </head>
@@ -60,48 +49,25 @@
         </div>
     </div>
 
-    <!-- START SCREEN -->
     <div id="scr-start" class="screen">
-        <img src="https://avatars.githubusercontent.com/u/204815157?v=4" style="width: 70px; border-radius: 15px; border: 2px solid var(--blurple); margin-bottom: 15px;">
         <h1 style="font-size: 70px; margin: 0; font-style: italic; background: linear-gradient(to right, #fff, var(--blurple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">GOD MODE</h1>
         <p style="letter-spacing: 5px; font-weight: 100; margin-bottom: 30px; font-size: 0.8em; opacity: 0.6;">SNEK CORE v4.0 // ASSET LIBRARY</p>
-        
-        <div class="shop">
-            <div class="item" onclick="Engine.buy('trail')">💫 Rainbow Trail<br><small>$100</small></div>
-            <div class="item" onclick="Engine.buy('nuke')">☢️ Sonic Nuke<br><small>$500</small></div>
-            <div class="item" onclick="Engine.buy('time')">⏳ Time Slow<br><small>$1000</small></div>
-            <div class="item" onclick="Engine.buy('god')">👑 Infinite Life<br><small>$5000</small></div>
-        </div>
-        
         <button class="btn" onclick="Engine.boot()">INITIALIZE CORE</button>
     </div>
 
-    <!-- DEATH SCREEN -->
     <div id="scr-death" class="screen hidden">
         <h2 style="color:var(--danger); font-size: 50px; margin: 0;">SYNCHRONIZATION LOST</h2>
         <p id="death-stats" style="font-size: 18px; margin: 20px 0; opacity: 0.8;"></p>
         <button class="btn" onclick="Engine.boot()">RE-SYNCHRONIZE</button>
-        <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8em; cursor: pointer;" onclick="location.reload()">Return to Community Hub</p>
     </div>
 </div>
 
 <script>
-/**
- * SNEK CORE: GOD MODE
- * Restoration of the High-Tier Engine Designs[cite: 4]
- * Optimized for DaniezOnSFUSD Community Hub[cite: 3]
- */
-
 const Engine = {
     canvas: document.getElementById('mainCanvas'),
     ctx: document.getElementById('mainCanvas').getContext('2d'),
-    grid: 25, active: false, frame: 0, score: 0, combo: 1,
-    bank: parseInt(localStorage.getItem('sfusd_bank')) || 0,
-    lvl: 1, xp: 0, speed: 90,
-    snake: [], food: [], fx: [], ghosts: [],
-    dir: {x:1, y:0}, next: {x:1, y:0},
-
-    shop: JSON.parse(localStorage.getItem('sfusd_up')) || { trail: 0, nuke: 0, time: 0, god: 0 },
+    grid: 25, active: false, frame: 0, score: 0, combo: 1, bank: 0, lvl: 1, xp: 0, speed: 90,
+    snake: [], food: [], fx: [], ghosts: [], dir: {x:1, y:0}, next: {x:1, y:0},
 
     boot() {
         this.resize();
@@ -134,20 +100,6 @@ const Engine = {
         }
     },
 
-    buy(key) {
-        const costs = { trail: 100, nuke: 500, time: 1000, god: 5000 };
-        if(this.bank >= costs[key]) {
-            this.bank -= costs[key];
-            this.shop[key]++;
-            localStorage.setItem('sfusd_bank', this.bank);
-            localStorage.setItem('sfusd_up', JSON.stringify(this.shop));
-            this.notify("UPGRADE INSTALLED: " + key.toUpperCase());
-            this.syncUI();
-        } else {
-            this.notify("INSUFFICIENT CREDITS");
-        }
-    },
-
     notify(m) {
         const b = document.getElementById('alert-box');
         b.innerText = m; b.style.top = '35px';
@@ -159,31 +111,19 @@ const Engine = {
         this.dir = this.next;
         const head = { x: this.snake[0].x + this.dir.x, y: this.snake[0].y + this.dir.y };
 
-        // Wrap Logic[cite: 4]
         if (head.x < 0) head.x = this.cols - 1;
         if (head.x >= this.cols) head.x = 0;
         if (head.y < 0) head.y = this.rows - 1;
         if (head.y >= this.rows) head.y = 0;
 
-        // Collision Check (Bypass if God Mode active)[cite: 4]
-        if (this.snake.some(s => s.x === head.x && s.y === head.y)) {
-            if (this.shop.god > 0) {
-                this.notify("GOD MODE DEFLECT!");
-                this.snake = this.snake.slice(0, 5);
-            } else return this.crash();
-        }
+        if (this.snake.some(s => s.x === head.x && s.y === head.y)) return this.crash();
 
         this.snake.unshift(head);
 
         let ate = false;
         this.food = this.food.filter(f => {
             if(head.x === f.x && head.y === f.y) {
-                ate = true;
-                this.score += f.val * this.combo;
-                this.bank += Math.floor(f.val / 2);
-                this.xp += 15;
-                this.combo++;
-                this.burst(f.x * this.grid, f.y * this.grid, f.val > 50 ? 'var(--gold)' : 'var(--neon-cyan)');
+                ate = true; this.score += f.val * this.combo; this.bank += Math.floor(f.val / 2); this.xp += 15; this.combo++;
                 return false;
             }
             return true;
@@ -192,36 +132,20 @@ const Engine = {
         if(!ate) {
             this.snake.pop();
             if(this.frame % 60 === 0) this.combo = Math.max(1, this.combo - 1);
-        } else {
-            this.spawn(this.lvl);
-        }
+        } else { this.spawn(this.lvl); }
 
-        // Motion Blur Ghosts[cite: 4]
         if(this.frame % 2 === 0) this.ghosts.unshift({body: [...this.snake], a: 0.4});
         this.ghosts = this.ghosts.filter(g => (g.a -= 0.05) > 0);
 
         if(this.xp >= 100) {
-            this.lvl++; this.xp = 0;
-            this.speed = Math.max(30, this.speed - 3);
+            this.lvl++; this.xp = 0; this.speed = Math.max(30, this.speed - 3);
             this.notify("CORE EVOLVED: STAGE " + this.lvl);
         }
-
-        // Particle FX
-        this.fx.forEach(p => { p.x += p.vx; p.y += p.vy; p.a -= 0.02; });
-        this.fx = this.fx.filter(p => p.a > 0);
-
         this.syncUI();
-    },
-
-    burst(x, y, color) {
-        for(let i=0; i<15; i++) {
-            this.fx.push({ x: x+12, y: y+12, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, a: 1, c: color });
-        }
     },
 
     crash() {
         this.active = false;
-        localStorage.setItem('sfusd_bank', this.bank);
         document.getElementById('scr-death').classList.remove('hidden');
         document.getElementById('death-stats').innerText = `EVOLUTION: STAGE ${this.lvl} | CREDITS: $${this.score}`;
     },
@@ -238,23 +162,6 @@ const Engine = {
         this.ctx.fillStyle = "#020408";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Grid (Glow Style)[cite: 4]
-        this.ctx.strokeStyle = `rgba(88, 101, 242, ${0.03 + (this.combo * 0.01)})`;
-        for(let i=0; i<this.canvas.width; i+=this.grid) {
-            this.ctx.beginPath(); this.ctx.moveTo(i, 0); this.ctx.lineTo(i, this.canvas.height); this.ctx.stroke();
-        }
-
-        // Blur Ghosts[cite: 4]
-        this.ghosts.forEach(g => {
-            this.ctx.globalAlpha = g.a;
-            this.ctx.fillStyle = "rgba(88, 101, 242, 0.2)";
-            g.body.forEach(b => {
-                this.ctx.fillRect(b.x * this.grid, b.y * this.grid, this.grid, this.grid);
-            });
-        });
-        this.ctx.globalAlpha = 1.0;
-
-        // Food (Pulsing Neon)[cite: 4]
         this.food.forEach(f => {
             this.ctx.shadowBlur = 15;
             this.ctx.shadowColor = f.val > 50 ? 'var(--gold)' : 'var(--neon-cyan)';
@@ -264,9 +171,8 @@ const Engine = {
             this.ctx.fill();
         });
 
-        // Player (Glow Shader)[cite: 4]
         this.snake.forEach((s, i) => {
-            this.ctx.fillStyle = this.shop.trail > 0 ? `hsl(${(this.frame + i*10) % 360}, 100%, 60%)` : (i === 0 ? "#fff" : "var(--blurple)");
+            this.ctx.fillStyle = `hsl(${(Date.now()/10 + i*10) % 360}, 100%, 60%)`;
             this.ctx.shadowBlur = i === 0 ? 25 : 0;
             this.ctx.shadowColor = "var(--neon-cyan)";
             this.ctx.beginPath();
@@ -274,13 +180,6 @@ const Engine = {
             this.ctx.fill();
         });
         this.ctx.shadowBlur = 0;
-
-        // Particles
-        this.fx.forEach(p => {
-            this.ctx.globalAlpha = p.a; this.ctx.fillStyle = p.c;
-            this.ctx.fillRect(p.x, p.y, 3, 3);
-        });
-        this.ctx.globalAlpha = 1.0;
     },
 
     loop() {
@@ -299,7 +198,6 @@ window.onkeydown = e => {
     if((k==='d'||k==='arrowright') && d.x===0) Engine.next = {x:1, y:0};
 };
 window.onresize = () => Engine.resize();
-Engine.syncUI();
 </script>
 </body>
 </html>
