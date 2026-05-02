@@ -1,377 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Burple Plains - DaniezonSFUSD</title>
+    <meta charset="UTF-8">
+    <title>Snek CORE: GOD MODE | DaniezOnSFUSD</title>
     <style>
-        :root { --blurple: #5865F2; --dark-bg: #0d1117; --panel: #161b22; --gold: #FFD700; }
-        body {
-            background-color: var(--dark-bg); display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; height: 100vh; margin: 0; 
-            font-family: 'Segoe UI', system-ui, sans-serif; color: #c9d1d9;
-        }    
-        #game-container {
-            position: relative; border-radius: 24px; overflow: hidden;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.6); border: 2px solid #30363d;
-            background: #000;
+        :root {
+            /* God Mode Colors Restored */
+            --blurple: #5865F2; --dark: #020408; --gold: #FFD700; 
+            --neon-pink: #ff00ff; --neon-cyan: #00f2ff; --danger: #ff4747;
+            --primary: #7289da; /* Homepage Sync */
         }
-        canvas { display: block; }
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(13, 17, 23, 0.96); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 10; text-align: center;
-        }
+        body { background: var(--dark); margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; }
         
-        .tracker-box {
-            background: var(--panel); border: 1px solid #30363d; border-radius: 16px;
-            padding: 20px; margin: 15px 0; width: 85%; position: relative;
-        }
-        .holiday-pill {
-            display: inline-block; padding: 6px 14px; margin: 4px; border-radius: 20px;
-            font-size: 12px; background: #21262d; cursor: pointer; transition: 0.2s;
-            border: 1px solid transparent; color: #8b949e;
-        }
-        .holiday-pill:hover { border-color: var(--blurple); color: white; transform: scale(1.05); }
+        #stage-container { position: relative; border: 4px solid #161b22; border-radius: 30px; box-shadow: 0 0 100px rgba(88, 101, 242, 0.3); background: #000; overflow: hidden; width: 95vw; height: 90vh; }
+        canvas { display: block; width: 100%; height: 100%; }
 
-        #preview-window {
-            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
-            width: 160px; height: 110px; border-radius: 14px; border: 3px solid var(--blurple);
-            background: #000; overflow: hidden; display: none; pointer-events: none;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7); z-index: 20;
-        }
+        /* HUD - God Mode Style */
+        .hud { position: absolute; inset: 0; pointer-events: none; padding: 30px; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
+        .hud-top { display: flex; justify-content: space-between; font-weight: 900; font-size: 20px; text-shadow: 0 0 15px var(--blurple); }
         
-        button {
-            background: #238636; color: white; border: none; padding: 16px 50px;
-            font-size: 18px; border-radius: 10px; cursor: pointer; font-weight: bold;
-            transition: 0.2s; box-shadow: 0 4px 0 #1a6328; margin-top: 10px;
-        }
-        button:hover { background: #2ea043; transform: translateY(-2px); }
-        button.blurple-btn { background: var(--blurple); box-shadow: 0 4px 0 #4752c4; }
-        button.blurple-btn:hover { background: #4752c4; }
-        
+        .xp-rail { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        #xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--blurple), var(--neon-pink)); transition: width 0.3s; box-shadow: 0 0 20px var(--neon-cyan); }
+
+        /* Notifications */
+        #alert-box { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, var(--blurple), #9199ff); padding: 12px 35px; border-radius: 50px; font-weight: bold; border: 2px solid white; box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: 0.5s; z-index: 1000; font-size: 0.9em; }
+
+        /* UI Screens */
+        .screen { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; text-align: center; }
         .hidden { display: none !important; }
-        #hud {
-            position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around;
-            color: #fff; font-weight: 900; z-index: 5; pointer-events: none; font-size: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-        
-        /* Shake Animation for Game Over */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-        .shake { animation: shake 0.4s; }
+
+        .btn { background: var(--blurple); color: white; border: none; padding: 18px 50px; font-size: 22px; border-radius: 15px; cursor: pointer; font-weight: 900; transition: 0.3s; box-shadow: 0 8px 0 #2d3691; text-transform: uppercase; }
+        .btn:hover { transform: translateY(-4px); box-shadow: 0 12px 0 #2d3691; filter: brightness(1.2); }
+
+        /* Shop Grid - God Mode Items */
+        .shop { display: grid; grid-template-columns: repeat(2, 200px); gap: 15px; margin: 25px 0; }
+        .item { background: #0d1117; padding: 15px; border-radius: 15px; border: 2px solid #30363d; cursor: pointer; transition: 0.2s; font-size: 0.85em; }
+        .item:hover { border-color: var(--neon-cyan); transform: scale(1.05); }
+
+        /* Scanline VFX */
+        #vfx { position: absolute; inset: 0; pointer-events: none; z-index: 100; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%); background-size: 100% 4px; opacity: 0.4; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-        <div id="hud" class="hidden">
-            <div>🍎 <span id="score">0</span></div>
-            <div style="color: var(--gold);" id="gold-hud" class="hidden">⭐ <span id="gold-timer"></span></div>
-            <div>🏆 <span id="highScore">0</span></div>
+<div id="stage-container">
+    <div id="vfx"></div>
+    <canvas id="mainCanvas"></canvas>
+    <div id="alert-box">CORE INITIALIZED</div>
+
+    <div class="hud">
+        <div class="hud-top">
+            <div>RANK: <span id="txt-rank" style="color:var(--neon-cyan)">GOD-TIER</span></div>
+            <div style="color:var(--gold)">CREDITS: $<span id="txt-bank">0</span></div>
+            <div>COMBO: <span id="txt-combo" style="color:var(--neon-pink)">X1</span></div>
         </div>
-
-        <div id="start-screen" class="overlay">
-            <h1 style="color:var(--blurple); margin:0; font-size: 38px;">Burple Plains Snek</h1>
-            <div style="font-size: 13px; opacity: 0.5;">by DaniezOnSFUSD</div>
-
-            <div class="tracker-box">
-                <div id="preview-window">
-                    <canvas id="preview-canvas" width="160" height="110"></canvas>
-                </div>
-                <div style="font-size: 10px; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; color: var(--blurple); font-weight: bold;">Live Season Previews</div>
-                <div id="tracker-list"></div>
-            </div>
-
-            <button onclick="startGame()">START ADVENTURE</button>
-        </div>
-
-        <div id="game-over-screen" class="overlay hidden">
-            <h1 style="color:#f85149; font-size: 48px; margin-bottom: 5px;">GAME OVER</h1>
-            <p style="font-size: 20px; color: #8b949e;">Final Score: <span id="final-score" style="color:white; font-weight:bold;">0</span></p>
-            <button class="blurple-btn" onclick="resetGame()">PLAY AGAIN</button>
+        <div>
+            <div style="margin-bottom: 5px; font-weight: bold; font-size: 11px; opacity: 0.7; letter-spacing: 1px;">SYSTEM EVOLUTION PROGRESS</div>
+            <div class="xp-rail"><div id="xp-bar"></div></div>
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const preCanvas = document.getElementById("preview-canvas");
-        const preCtx = preCanvas.getContext("2d");
+    <!-- START SCREEN -->
+    <div id="scr-start" class="screen">
+        <img src="https://avatars.githubusercontent.com/u/204815157?v=4" style="width: 70px; border-radius: 15px; border: 2px solid var(--blurple); margin-bottom: 15px;">
+        <h1 style="font-size: 70px; margin: 0; font-style: italic; background: linear-gradient(to right, #fff, var(--blurple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">GOD MODE</h1>
+        <p style="letter-spacing: 5px; font-weight: 100; margin-bottom: 30px; font-size: 0.8em; opacity: 0.6;">SNEK CORE v4.0 // ASSET LIBRARY</p>
+        
+        <div class="shop">
+            <div class="item" onclick="Engine.buy('trail')">💫 Rainbow Trail<br><small>$100</small></div>
+            <div class="item" onclick="Engine.buy('nuke')">☢️ Sonic Nuke<br><small>$500</small></div>
+            <div class="item" onclick="Engine.buy('time')">⏳ Time Slow<br><small>$1000</small></div>
+            <div class="item" onclick="Engine.buy('god')">👑 Infinite Life<br><small>$5000</small></div>
+        </div>
+        
+        <button class="btn" onclick="Engine.boot()">INITIALIZE CORE</button>
+    </div>
 
-        // Game State Variables
-        let score = 0, dx = 0, dy = 0, nextDx = 0, nextDy = -1, inputProcessed = true;
-        let snake = [], food = {}, goldenFood = null;
-        let particles = [], gameLoopId;
-        let isPlaying = false;
-        let bestScore = localStorage.getItem("burpleHighScore") || 0;
-        document.getElementById('highScore').innerText = bestScore;
+    <!-- DEATH SCREEN -->
+    <div id="scr-death" class="screen hidden">
+        <h2 style="color:var(--danger); font-size: 50px; margin: 0;">SYNCHRONIZATION LOST</h2>
+        <p id="death-stats" style="font-size: 18px; margin: 20px 0; opacity: 0.8;"></p>
+        <button class="btn" onclick="Engine.boot()">RE-SYNCHRONIZE</button>
+        <p style="margin-top: 20px; opacity: 0.4; font-size: 0.8em; cursor: pointer;" onclick="location.reload()">Return to Community Hub</p>
+    </div>
+</div>
 
-        // Preview Variables
-        let previewSnekX = 20, previewDir = 1, previewFrame = 0, activePreviewTheme = null;
-        const themes = {
-            winter: { bg: "#E0F7FA", accent: "#B2EBF2" },
-            spring: { bg: "#FFD1DC", accent: "#FFB6C1" },
-            summer: { bg: "#A2E4B8", accent: "#81C784" },
-            autumn: { bg: "#FFB347", accent: "#F57C00" },
-            birthday: { bg: "#FFF9C4", accent: "#FDD835" }
-        };
-        const holidays = [
-            { name: "New Year 🎆", t: 'winter' },
-            { name: "DaniezOnSFUSD's Birthday! 🎂", t: 'birthday' },
-            { name: "St. Patricks 🍀", t: 'spring' },
-            { name: "Halloween 🎃", t: 'autumn' },
-            { name: "Christmas 🎄", t: 'winter' }
-        ];
+<script>
+/**
+ * SNEK CORE: GOD MODE
+ * Restoration of the High-Tier Engine Designs[cite: 4]
+ * Optimized for DaniezOnSFUSD Community Hub[cite: 3]
+ */
 
-        // Particle System for explosions
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y;
-                this.vx = (Math.random() - 0.5) * 8;
-                this.vy = (Math.random() - 0.5) * 8;
-                this.life = 1.0;
-                this.color = color;
-                this.size = Math.random() * 4 + 2;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                this.life -= 0.05;
-            }
-            draw(ctx) {
-                ctx.globalAlpha = Math.max(0, this.life);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-                ctx.globalAlpha = 1.0;
-            }
-        }
+const Engine = {
+    canvas: document.getElementById('mainCanvas'),
+    ctx: document.getElementById('mainCanvas').getContext('2d'),
+    grid: 25, active: false, frame: 0, score: 0, combo: 1,
+    bank: parseInt(localStorage.getItem('sfusd_bank')) || 0,
+    lvl: 1, xp: 0, speed: 90,
+    snake: [], food: [], fx: [], ghosts: [],
+    dir: {x:1, y:0}, next: {x:1, y:0},
 
-        function spawnFood() {
-            food = {x: Math.floor(Math.random()*30), y: Math.floor(Math.random()*30)};
-            // Ensure food doesn't spawn on snake
-            while(snake.some(s => s.x === food.x && s.y === food.y)) {
-                food = {x: Math.floor(Math.random()*30), y: Math.floor(Math.random()*30)};
-            }
-        }
+    shop: JSON.parse(localStorage.getItem('sfusd_up')) || { trail: 0, nuke: 0, time: 0, god: 0 },
 
-        function spawnGoldenFood() {
-            goldenFood = {
-                x: Math.floor(Math.random()*30), 
-                y: Math.floor(Math.random()*30),
-                timer: 50 // Lifetime of golden apple in ticks
-            };
-            document.getElementById('gold-hud').classList.remove('hidden');
-        }
+    boot() {
+        this.resize();
+        this.active = true; this.score = 0; this.lvl = 1; this.xp = 0; this.speed = 90; this.combo = 1;
+        this.snake = Array.from({length: 5}, (_, i) => ({x: 10-i, y: 10}));
+        this.dir = {x:1, y:0}; this.next = {x:1, y:0};
+        this.food = []; this.fx = []; this.ghosts = [];
+        document.getElementById('scr-start').classList.add('hidden');
+        document.getElementById('scr-death').classList.add('hidden');
+        this.spawn(5); 
+        this.loop();
+        this.notify("SYSTEM ONLINE // WELCOME DANIEZ");
+    },
 
-        function createExplosion(x, y, color, count=15) {
-            for(let i=0; i<count; i++) {
-                particles.push(new Particle(x * 20 + 10, y * 20 + 10, color));
-            }
-        }
+    resize() {
+        this.canvas.width = this.canvas.offsetWidth;
+        this.canvas.height = this.canvas.offsetHeight;
+        this.cols = Math.floor(this.canvas.width / this.grid);
+        this.rows = Math.floor(this.canvas.height / this.grid);
+    },
 
-        function initTracker() {
-            const list = document.getElementById('tracker-list');
-            const preview = document.getElementById('preview-window');
-            holidays.forEach(h => {
-                const pill = document.createElement('div');
-                pill.className = 'holiday-pill';
-                pill.innerText = h.name;
-                pill.onmouseenter = () => { preview.style.display = 'block'; activePreviewTheme = themes[h.t]; runPreviewLoop(); };
-                pill.onmouseleave = () => { preview.style.display = 'none'; activePreviewTheme = null; };
-                list.appendChild(pill);
+    spawn(count = 1) {
+        for(let i=0; i<count; i++) {
+            this.food.push({
+                x: Math.floor(Math.random() * (this.cols - 2)) + 1,
+                y: Math.floor(Math.random() * (this.rows - 2)) + 1,
+                val: Math.random() > 0.9 ? 100 : 25,
+                hue: Math.random() * 360
             });
         }
+    },
 
-        function runPreviewLoop() {
-            if (!activePreviewTheme) return;
-            previewFrame++;
-            preCtx.fillStyle = activePreviewTheme.bg; preCtx.fillRect(0,0,160,110);
-            preCtx.fillStyle = activePreviewTheme.accent;
-            for(let i=0; i<5; i++) preCtx.fillRect(10 + (i*30), 80, 15, 5);
+    buy(key) {
+        const costs = { trail: 100, nuke: 500, time: 1000, god: 5000 };
+        if(this.bank >= costs[key]) {
+            this.bank -= costs[key];
+            this.shop[key]++;
+            localStorage.setItem('sfusd_bank', this.bank);
+            localStorage.setItem('sfusd_up', JSON.stringify(this.shop));
+            this.notify("UPGRADE INSTALLED: " + key.toUpperCase());
+            this.syncUI();
+        } else {
+            this.notify("INSUFFICIENT CREDITS");
+        }
+    },
 
-            previewSnekX += previewDir * 1.5;
-            if (previewSnekX > 110 || previewSnekX < 10) previewDir *= -1;
+    notify(m) {
+        const b = document.getElementById('alert-box');
+        b.innerText = m; b.style.top = '35px';
+        setTimeout(() => b.style.top = '-100px', 2500);
+    },
 
-            for(let i=0; i<4; i++) {
-                preCtx.fillStyle = (i === 0) ? "#5865F2" : "#7289da";
-                const segmentX = previewSnekX - (i * 8 * previewDir);
-                const segmentY = 50 + Math.sin((previewFrame + i * 5) * 0.1) * 3;
-                preCtx.beginPath(); preCtx.roundRect(segmentX, segmentY, 10, 10, 3); preCtx.fill();
-            }
-            requestAnimationFrame(runPreviewLoop);
+    update() {
+        this.frame++;
+        this.dir = this.next;
+        const head = { x: this.snake[0].x + this.dir.x, y: this.snake[0].y + this.dir.y };
+
+        // Wrap Logic[cite: 4]
+        if (head.x < 0) head.x = this.cols - 1;
+        if (head.x >= this.cols) head.x = 0;
+        if (head.y < 0) head.y = this.rows - 1;
+        if (head.y >= this.rows) head.y = 0;
+
+        // Collision Check (Bypass if God Mode active)[cite: 4]
+        if (this.snake.some(s => s.x === head.x && s.y === head.y)) {
+            if (this.shop.god > 0) {
+                this.notify("GOD MODE DEFLECT!");
+                this.snake = this.snake.slice(0, 5);
+            } else return this.crash();
         }
 
-        function startGame() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-            resetGame();
-        }
+        this.snake.unshift(head);
 
-        function resetGame() {
-            document.getElementById('game-over-screen').classList.add('hidden');
-            document.getElementById('game-container').classList.remove('shake');
-            score = 0; dx = 0; dy = 0; nextDx = 0; nextDy = -1;
-            snake = [{x: 15, y: 15}, {x: 15, y: 16}, {x: 15, y: 17}];
-            particles = []; goldenFood = null;
-            document.getElementById('score').innerText = score;
-            document.getElementById('gold-hud').classList.add('hidden');
-            spawnFood();
-            isPlaying = true;
-            gameLoop();
-        }
-
-        function gameOver() {
-            isPlaying = false;
-            clearTimeout(gameLoopId);
-            document.getElementById('game-container').classList.add('shake');
-            document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('final-score').innerText = score;
-            
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem("burpleHighScore", bestScore);
-                document.getElementById('highScore').innerText = bestScore;
+        let ate = false;
+        this.food = this.food.filter(f => {
+            if(head.x === f.x && head.y === f.y) {
+                ate = true;
+                this.score += f.val * this.combo;
+                this.bank += Math.floor(f.val / 2);
+                this.xp += 15;
+                this.combo++;
+                this.burst(f.x * this.grid, f.y * this.grid, f.val > 50 ? 'var(--gold)' : 'var(--neon-cyan)');
+                return false;
             }
-        }
-
-        function update() {
-            dx = nextDx; dy = nextDy; inputProcessed = true; 
-            if(dx===0 && dy===0) return;
-            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-            
-            // Wall Collision & Self Collision
-            if(head.x<0 || head.x>=30 || head.y<0 || head.y>=30 || snake.some(s=>s.x===head.x && s.y===head.y)) {
-                gameOver(); return;
-            }
-            
-            snake.unshift(head);
-            
-            // Eat Normal Food
-            if(head.x === food.x && head.y === food.y) {
-                score++; document.getElementById('score').innerText = score;
-                createExplosion(food.x, food.y, "#ff4444");
-                spawnFood();
-                // 15% chance to spawn golden food if not active
-                if (!goldenFood && Math.random() < 0.15) spawnGoldenFood();
-            } 
-            // Eat Golden Food
-            else if (goldenFood && head.x === goldenFood.x && head.y === goldenFood.y) {
-                score += 5; document.getElementById('score').innerText = score;
-                createExplosion(goldenFood.x, goldenFood.y, "#FFD700", 30);
-                goldenFood = null;
-                document.getElementById('gold-hud').classList.add('hidden');
-            } 
-            else { 
-                snake.pop(); 
-            }
-
-            // Golden Food Timer
-            if (goldenFood) {
-                goldenFood.timer--;
-                document.getElementById('gold-timer').innerText = goldenFood.timer;
-                if (goldenFood.timer <= 0) {
-                    createExplosion(goldenFood.x, goldenFood.y, "#555", 5);
-                    goldenFood = null;
-                    document.getElementById('gold-hud').classList.add('hidden');
-                }
-            }
-
-            // Update Particles
-            particles.forEach(p => p.update());
-            particles = particles.filter(p => p.life > 0);
-        }
-
-        function drawGrid() {
-            ctx.strokeStyle = "#21262d";
-            ctx.lineWidth = 1;
-            for(let i=0; i<=600; i+=20) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 600); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(600, i); ctx.stroke();
-            }
-        }
-
-        function gameLoop() {
-            if (!isPlaying) return;
-
-            // Background
-            ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,600,600);
-            drawGrid();
-            
-            // Draw Normal Food (Apple)
-            ctx.font = "20px Arial"; ctx.fillText("🍎", food.x*20+2, food.y*20+18);
-
-            // Draw Golden Food
-            if (goldenFood) {
-                // Pulse effect
-                ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 100) * 0.4;
-                ctx.fillText("⭐", goldenFood.x*20+2, goldenFood.y*20+18);
-                ctx.globalAlpha = 1.0;
-            }
-            
-            // Draw Snake
-            snake.forEach((p, index) => {
-                ctx.fillStyle = index === 0 ? "#7289da" : "#5865F2"; // Lighter head
-                
-                // Tail shrinking effect
-                let size = 19;
-                let offset = 0;
-                if (index === snake.length - 1 && snake.length > 3) {
-                    size = 10; offset = 4.5;
-                } else if (index === snake.length - 2 && snake.length > 3) {
-                    size = 14; offset = 2.5;
-                }
-
-                ctx.beginPath(); 
-                ctx.roundRect(p.x*20 + offset, p.y*20 + offset, size, size, 5); 
-                ctx.fill();
-
-                // Eyes on head
-                if (index === 0) {
-                    ctx.fillStyle = "white";
-                    let eye1 = {x:0, y:0}, eye2 = {x:0, y:0};
-                    if (dx===1)  { eye1 = {x:14,y:5}; eye2 = {x:14,y:12}; } // Right
-                    if (dx===-1) { eye1 = {x:5,y:5};  eye2 = {x:5,y:12}; }  // Left
-                    if (dy===1)  { eye1 = {x:5,y:14}; eye2 = {x:12,y:14}; } // Down
-                    if (dy===-1) { eye1 = {x:5,y:5};  eye2 = {x:12,y:5}; }  // Up
-                    
-                    if(dx!==0 || dy!==0) {
-                        ctx.beginPath(); ctx.arc(p.x*20+eye1.x, p.y*20+eye1.y, 2, 0, Math.PI*2); ctx.fill();
-                        ctx.beginPath(); ctx.arc(p.x*20+eye2.x, p.y*20+eye2.y, 2, 0, Math.PI*2); ctx.fill();
-                    }
-                }
-            });
-
-            // Draw Particles
-            particles.forEach(p => p.draw(ctx));
-
-            update();
-            
-            let speed = Math.max(50, 120 - (score * 2.5));
-            gameLoopId = setTimeout(gameLoop, speed);
-        }
-
-        window.addEventListener("keydown", e => {
-            if (!inputProcessed || !isPlaying) return; 
-            const k = e.key.toLowerCase();
-            if((k==="w"||k==="arrowup") && dy!==1) {nextDx=0; nextDy=-1; inputProcessed = false;}
-            if((k==="s"||k==="arrowdown") && dy!==-1) {nextDx=0; nextDy=1; inputProcessed = false;}
-            if((k==="a"||k==="arrowleft") && dx!==1) {nextDx=-1; nextDy=0; inputProcessed = false;}
-            if((k==="d"||k==="arrowright") && dx!==-1) {nextDx=1; nextDy=0; inputProcessed = false;}
+            return true;
         });
 
-        ctx.fillStyle = "#0d1117"; ctx.fillRect(0,0,600,600);
-        initTracker();
-    </script>
+        if(!ate) {
+            this.snake.pop();
+            if(this.frame % 60 === 0) this.combo = Math.max(1, this.combo - 1);
+        } else {
+            this.spawn(this.lvl);
+        }
+
+        // Motion Blur Ghosts[cite: 4]
+        if(this.frame % 2 === 0) this.ghosts.unshift({body: [...this.snake], a: 0.4});
+        this.ghosts = this.ghosts.filter(g => (g.a -= 0.05) > 0);
+
+        if(this.xp >= 100) {
+            this.lvl++; this.xp = 0;
+            this.speed = Math.max(30, this.speed - 3);
+            this.notify("CORE EVOLVED: STAGE " + this.lvl);
+        }
+
+        // Particle FX
+        this.fx.forEach(p => { p.x += p.vx; p.y += p.vy; p.a -= 0.02; });
+        this.fx = this.fx.filter(p => p.a > 0);
+
+        this.syncUI();
+    },
+
+    burst(x, y, color) {
+        for(let i=0; i<15; i++) {
+            this.fx.push({ x: x+12, y: y+12, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, a: 1, c: color });
+        }
+    },
+
+    crash() {
+        this.active = false;
+        localStorage.setItem('sfusd_bank', this.bank);
+        document.getElementById('scr-death').classList.remove('hidden');
+        document.getElementById('death-stats').innerText = `EVOLUTION: STAGE ${this.lvl} | CREDITS: $${this.score}`;
+    },
+
+    syncUI() {
+        document.getElementById('txt-bank').innerText = this.bank;
+        document.getElementById('txt-combo').innerText = "X" + this.combo;
+        document.getElementById('xp-bar').style.width = this.xp + "%";
+        const r = ["SNEK", "ELITE", "CYBORG", "ARCHON", "GOD-TIER"];
+        document.getElementById('txt-rank').innerText = r[Math.min(Math.floor(this.lvl/3), 4)];
+    },
+
+    draw() {
+        this.ctx.fillStyle = "#020408";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Grid (Glow Style)[cite: 4]
+        this.ctx.strokeStyle = `rgba(88, 101, 242, ${0.03 + (this.combo * 0.01)})`;
+        for(let i=0; i<this.canvas.width; i+=this.grid) {
+            this.ctx.beginPath(); this.ctx.moveTo(i, 0); this.ctx.lineTo(i, this.canvas.height); this.ctx.stroke();
+        }
+
+        // Blur Ghosts[cite: 4]
+        this.ghosts.forEach(g => {
+            this.ctx.globalAlpha = g.a;
+            this.ctx.fillStyle = "rgba(88, 101, 242, 0.2)";
+            g.body.forEach(b => {
+                this.ctx.fillRect(b.x * this.grid, b.y * this.grid, this.grid, this.grid);
+            });
+        });
+        this.ctx.globalAlpha = 1.0;
+
+        // Food (Pulsing Neon)[cite: 4]
+        this.food.forEach(f => {
+            this.ctx.shadowBlur = 15;
+            this.ctx.shadowColor = f.val > 50 ? 'var(--gold)' : 'var(--neon-cyan)';
+            this.ctx.fillStyle = f.val > 50 ? 'var(--gold)' : `hsl(${f.hue}, 100%, 50%)`;
+            this.ctx.beginPath();
+            this.ctx.arc(f.x * this.grid + 12, f.y * this.grid + 12, 8 + Math.sin(this.frame/10)*2, 0, Math.PI*2);
+            this.ctx.fill();
+        });
+
+        // Player (Glow Shader)[cite: 4]
+        this.snake.forEach((s, i) => {
+            this.ctx.fillStyle = this.shop.trail > 0 ? `hsl(${(this.frame + i*10) % 360}, 100%, 60%)` : (i === 0 ? "#fff" : "var(--blurple)");
+            this.ctx.shadowBlur = i === 0 ? 25 : 0;
+            this.ctx.shadowColor = "var(--neon-cyan)";
+            this.ctx.beginPath();
+            this.ctx.roundRect(s.x * this.grid + 2, s.y * this.grid + 2, this.grid - 4, this.grid - 4, 6);
+            this.ctx.fill();
+        });
+        this.ctx.shadowBlur = 0;
+
+        // Particles
+        this.fx.forEach(p => {
+            this.ctx.globalAlpha = p.a; this.ctx.fillStyle = p.c;
+            this.ctx.fillRect(p.x, p.y, 3, 3);
+        });
+        this.ctx.globalAlpha = 1.0;
+    },
+
+    loop() {
+        if(!this.active) return;
+        this.update(); this.draw();
+        setTimeout(() => requestAnimationFrame(() => this.loop()), this.speed);
+    }
+};
+
+window.onkeydown = e => {
+    const k = e.key.toLowerCase();
+    const d = Engine.dir;
+    if((k==='w'||k==='arrowup') && d.y===0) Engine.next = {x:0, y:-1};
+    if((k==='s'||k==='arrowdown') && d.y===0) Engine.next = {x:0, y:1};
+    if((k==='a'||k==='arrowleft') && d.x===0) Engine.next = {x:-1, y:0};
+    if((k==='d'||k==='arrowright') && d.x===0) Engine.next = {x:1, y:0};
+};
+window.onresize = () => Engine.resize();
+Engine.syncUI();
+</script>
 </body>
 </html>
