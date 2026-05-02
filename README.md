@@ -1,43 +1,38 @@
-# 🐍 Burple Plains Snek
-### Created by [DaniezOnSFUSD](https://github.com/DaniezonSFUSD)
+# Snek Core Engine (God Mode)
+### Developed by DaniezOnSFUSD
 
-A calendar-aware, "living" arcade experience built with the Discord Blurple aesthetic.
 
-[License](https://daniezonsfusd.github.io/snek/LICENCE)
+### Project Overview
+The Snek Core Engine is a high-performance, browser-based arcade recreation specifically optimized for the God Mode experience. This version integrates advanced visual effects, a dynamic ranking system, and a "rainbow trail" motion system designed for a modern, neon-infused aesthetic.
 
----
+### Features
+God Mode Engine: High-speed synchronization and native screen-wrapping logic.
 
-## 📅 Live Holiday & Season Tracker
-The game environment transforms based on your local date. **Hover over the holiday list on the start screen** to preview each season!
+Visual Fidelity: Includes neon scanlines (VFX), motion blur trails, and a dynamic HUD.
 
-*   **🌸 Spring:** Cherry blossoms and soft breezes.
-*   **☀️ Summer:** Vibrant lawns and glowing sunflowers.
-*   **🍂 Autumn:** Harvest colors and falling orange leaves.
-*   **❄️ Winter:** Crisp snow and cyan accents.
+Progression System: Real-time XP tracking, combo multipliers, and an evolving rank system from "SNEK" to "GOD-TIER".
 
-### ✨ Special Events
-*   **🎂 Feb 22nd:** **DaniezOnSFUSD's Birthday!** Exclusive celebration effects and party hat assets.
-*   **🎃 October:** Halloween mode with custom Snek horn aesthetics.
-*   **🎆 New Year:** Sparkle trails and crowns for high-scorers.
+Cross-Page Compatibility: Unified styles for integration into 404, 410, and 503 error pages.
 
----
+Installation and Deployment
+Fork the Repository: Create a fork within the GitHub ecosystem for personal or archival use.
 
-## 🎮 Game Features
-*   **Day/Night Cycle:** Automatic darkening and firefly emergence after 7:00 PM.
-*   **Bonus Dimension:** Enter a golden portal every 50 points for 8 seconds of bonus scoring.
-*   **GitHub Optimized:** Lightweight code designed for high-performance web rendering.
+Environment: Ensure the environment is ECMAScript-compliant to handle the game's JavaScript logic.
 
----
+Local Implementation: Copy the HTML5 and CSS3 components into your local project root.
 
-## ⚖️ Proprietary License
-Copyright (c) 2026 DaniezOnSFUSD. All Rights Reserved.
+### Proprietary License Summary
+This software is governed by the Proprietary License Agreement (2026).
 
-**Usage Requirements:**
-- **Attribution:** All forks must retain the original copyright notice and link back to this repository.
-- **Non-Commercial:** Strictly personal, non-commercial use only. 
-- **No External Mirroring:** This code is licensed exclusively for use within the GitHub ecosystem.
+Attribution: The original copyright notice must remain intact in all source files.
 
-*See the full [LICENSE](./LICENSE) file for complete legal terms.*
+Non-Commercial: Usage is strictly for personal, non-commercial, and non-monetized deployment.
 
----
-**Developed with 💜 by DaniezOnSFUSD**
+No Mirroring: Unauthorized replication or deployment on external CDNs or secondary hosting platforms is prohibited.
+
+### Credits
+Architectural Logic and Codebase: DaniezOnSFUSD.
+
+Third-Party Attribution: No ownership is claimed over third-party modules such as Slope, Papa’s Gamerias, or EaglerCraft.
+
+For full legal terms, refer to the [LICENCE](./LICENCE)
